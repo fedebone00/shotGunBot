@@ -9,18 +9,37 @@ using namespace TgBot;
 int answeringAt, answeringMessageId;
 
 int main(){
-	const string token(getenv("SHOTGUNBOTKEY"));
+	char* key = getenv("SHOTGUNBOTKEY");
+	const string token(key);
 	vector<myUser> users;
 	loadUsersFromFile(&users);
 	vector<Shotgun> shotguns;
 	Bot bot(token);
 
-	bot.getEvents().onCommand("start", [&users, &bot](Message::Ptr message) {handleStartCommand(&users, &bot, message);});
-	bot.getEvents().onCommand("feedback", [&users, &bot](Message::Ptr message) {handleFeedbackCommand(&users, &bot, message);});
-	bot.getEvents().onCommand("cancel", [&users, &bot](Message::Ptr message) {handleCancelCommand(&users, &bot, message);});
-	bot.getEvents().onCommand("create", [&shotguns, &users, &bot](Message::Ptr message) {handleCreateCommand(&shotguns, &users, &bot, message);});
-	bot.getEvents().onNonCommandMessage([&users, &bot](Message::Ptr message) {handleNonCommand(&users, &bot, message);});
-	bot.getEvents().onCallbackQuery([&shotguns, &users, &bot](CallbackQuery::Ptr callback) {handleCallbackQuery(&shotguns, &users, &bot, callback);});
+	bot.getEvents().onCommand("start", [&users, &bot](Message::Ptr message) {
+		try{handleStartCommand(&users, &bot, message);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
+	bot.getEvents().onCommand("feedback", [&users, &bot](Message::Ptr message) {
+		try{handleFeedbackCommand(&users, &bot, message);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
+	bot.getEvents().onCommand("cancel", [&users, &bot](Message::Ptr message) {
+		try{handleCancelCommand(&users, &bot, message);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
+	bot.getEvents().onCommand("create", [&shotguns, &users, &bot](Message::Ptr message) {
+		try{handleCreateCommand(&shotguns, &users, &bot, message);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
+	bot.getEvents().onNonCommandMessage([&users, &bot](Message::Ptr message) {
+		try{handleNonCommand(&users, &bot, message);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
+	bot.getEvents().onCallbackQuery([&shotguns, &users, &bot](CallbackQuery::Ptr callback) {
+		try{handleCallbackQuery(&shotguns, &users, &bot, callback);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
 
 	try {
         printf("Bot username: %s\n", bot.getApi().getMe()->username.c_str());
@@ -325,5 +344,4 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 
 		bot->getApi().editMessageText(shotgun->messageText, shotgun->chatId, shotgun->messageId, "", "Markdown", false, shotgun->keyboard);
 	}
-	bot->getApi().answerCallbackQuery(callback->id);
 }
