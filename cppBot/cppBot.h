@@ -7,7 +7,6 @@
 #include <iostream>
 #include <tgbot/tgbot.h>
 #include <vector>
-#include <filesystem>
 
 // TODO: Fare riferimento qui alle intestazioni aggiuntive richieste dal programma.
 
