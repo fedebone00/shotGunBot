@@ -22,7 +22,7 @@ int main(){
 		});
 	bot.getEvents().onCommand("feedback", [&users, &bot](Message::Ptr message) {
 		try{handleFeedbackCommand(&users, &bot, message);}
-		catch(exception& e){cerr << e.what() << endl;}
+		catch(exception& e){cout << e.what() << endl;}
 		});
 	bot.getEvents().onCommand("cancel", [&users, &bot](Message::Ptr message) {
 		try{handleCancelCommand(&users, &bot, message);}
@@ -56,6 +56,40 @@ int main(){
 	return 0;
 }
 
+void MergeSort(vector<myUser> *users, int p, int r){
+    if(p<r){
+        int q = (p+r)/2;
+        MergeSort(users, p, q);
+        MergeSort(users, q+1, r);
+        Merge(users, p, q, r);
+    }
+}
+
+void Merge(vector<myUser> *users, int p, int q, int r){
+    int lSx = q-p+1;
+    int lDx = r-q;
+    vector<myUser> Dx, Sx;
+    for(int i=0; i<lSx; i++){
+        Sx.push_back(users->at(p+i));
+    }
+    for(int j=0; j<lDx; j++){
+        Dx.push_back(users->at(q+j+1));
+    }
+    Dx.push_back(myUser(0, INT32_MAX));
+    Sx.push_back(myUser(0, INT32_MAX));
+
+    int i=0, j=0;
+    for(int k=p; k<=r; k++){
+        if(Sx[i].id <= Dx[j].id ){
+            users->at(k) = Sx[i];
+            i++;
+        } else {
+            users->at(k) = Dx[j];
+            j++;
+        }
+    }
+}
+
 void loadUsersFromFile(vector<myUser> *v){
 	ifstream file;
 	long _chatId;
@@ -73,16 +107,19 @@ void loadUsersFromFile(vector<myUser> *v){
 		v->push_back(myUser(_chatId, _id));
 	}
 	file.close();
-	cout << "loaded " << v->size() << endl;
+
+	MergeSort(v, 0, v->size()-1);
+
+	cout << "loaded and ordered " << v->size() << endl;
 }
 
-void addUserToFile(myUser *u){
+void addUserToFile(myUser* u){
 	ofstream file;
 	
 	char cwd[50];
 	getcwd(cwd, sizeof(char)*50);
 
-	file.open(string(cwd) + "/cppBot/users.txt");
+	file.open(string(cwd) + "/cppBot/users.txt", ofstream::app);
 	if(file.fail()){
 		cerr << "Errore nell'apertura del file in scrittura" << endl;
 		return;
@@ -92,10 +129,28 @@ void addUserToFile(myUser *u){
 	file.close();
 }
 
-int getOrInsertUser(vector<myUser>* users, myUser _user){
+int findUser(vector<myUser>* users, myUser* _user){
+	for (int i = 0; i < users->size(); i++)
+	{
+		if(users->at(i).equals(_user))
+			return i;
+	}
+	return -1;
+}
+
+int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun){
+	for (int i = 0; i < shotguns->size(); i++)
+	{
+		if(shotguns->at(i).chatId == _shotgun->chatId)
+			return i;
+	}
+	return -1;
+}
+
+int getOrInsertUser(vector<myUser>* users, myUser* _user){
 	if(users->size() == 0){
-		users->insert(users->begin(), _user);
-		addUserToFile(&_user);
+		users->insert(users->begin(), *_user);
+		addUserToFile(_user);
 		return 0;
 	}
 	int bottom = 0, top = users->size()-1, middle;
@@ -103,53 +158,31 @@ int getOrInsertUser(vector<myUser>* users, myUser _user){
 	while(top >= bottom){
 		middle = (top+bottom)/2;
 
-		if(_user.id < users->at(middle).id) top = middle-1;
-		else if(_user.id > users->at(middle).id) bottom = middle+1;
-		else if(_user.chatId == users->at(middle).chatId) return middle;
+		if(_user->id < users->at(middle).id) top = middle-1;
+		else if(_user->id > users->at(middle).id) bottom = middle+1;
+		else if(users->at(middle).equals(_user)) return middle;
 		else break;
 	}
 
-	addUserToFile(&_user);
-	if(_user.id < users->at(middle).id){
-		users->insert(users->begin()+middle-1, _user);
+	addUserToFile(_user);
+	if(_user->id < users->at(middle).id){
+		users->insert(users->begin()+middle-1, *_user);
 		return middle-1;
 	} else {
-		users->insert(users->begin()+middle+1, _user);
-		return middle+1;
-	}
-}
-
-int getOrInsertShotgun(vector<Shotgun>* shotguns, Shotgun _shotgun, bool* inserito){
-	if(shotguns->size() == 0){
-		*inserito = true;
-		shotguns->insert(shotguns->begin(), _shotgun);
-		return 0;
-	}
-	int bottom = 0, top = shotguns->size()-1, middle;
-	
-	while(top >= bottom){
-		middle = (top+bottom)/2;
-
-		if(_shotgun.chatId < shotguns->at(middle).chatId) top = middle-1;
-		else if(_shotgun.chatId > shotguns->at(middle).chatId) bottom = middle+1;
-		else{
-			*inserito = false;
-			return middle;
-		}
-	}
-
-	*inserito = true;
-	if(_shotgun.chatId < shotguns->at(middle).chatId){
-		shotguns->insert(shotguns->begin()+middle-1, _shotgun);
-		return middle-1;
-	} else {
-		shotguns->insert(shotguns->begin()+middle+1, _shotgun);
+		users->insert(users->begin()+middle+1, *_user);
 		return middle+1;
 	}
 }
 
 void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
-	int userIndex = getOrInsertUser(users, myUser(message->chat->id, message->from->id));
+	myUser* tmp = new myUser(message->chat->id, message->from->id);
+	int userIndex = findUser(users, tmp);
+	if(userIndex==-1){
+		users->push_back(*tmp);
+		userIndex = users->size()-1;
+		addUserToFile(tmp);
+	}
+	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	bot->getApi().sendMessage(user->chatId, "Ciao, sono un bot demmerda scritto in c++, porta pazienza"
 		" e segnala i bug tramite il comando /feedback\n\n"
@@ -159,21 +192,41 @@ void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
 }
 
 void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
-	int userIndex = getOrInsertUser(users, myUser(message->chat->id, message->from->id));
+	myUser* tmp = new myUser(message->chat->id, message->from->id);
+	int userIndex = findUser(users, tmp);
+	if(userIndex==-1){
+		users->push_back(*tmp);
+		userIndex = users->size()-1;
+		addUserToFile(tmp);
+	}
+	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	user->state = FEEDBACK;
 	bot->getApi().sendMessage(user->chatId, "Invia il tuo feedback o digita /cancel per terminare");
 }
 
 void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
-	int userIndex = getOrInsertUser(users, myUser(message->chat->id, message->from->id));
+	myUser* tmp = new myUser(message->chat->id, message->from->id);
+	int userIndex = findUser(users, tmp);
+	if(userIndex==-1){
+		users->push_back(*tmp);
+		userIndex = users->size()-1;
+		addUserToFile(tmp);
+	}
 	myUser* user = &(users->at(userIndex));
 	user->state = NORMAL;
 	bot->getApi().sendMessage(user->chatId, "Operazione annullata");
 }
 
 void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
-	int userIndex = getOrInsertUser(users, myUser(message->chat->id, message->from->id));
+	myUser* tmp = new myUser(message->chat->id, message->from->id);
+	int userIndex = findUser(users, tmp);
+	if(userIndex==-1){
+		users->push_back(*tmp);
+		userIndex = users->size()-1;
+		addUserToFile(tmp);
+	}
+	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	
 	vector<string> options = StringTools::split(message->text, ' ');
@@ -188,7 +241,14 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 	}
 
 	bool inserito = false;
-	int shotgunIndex = getOrInsertShotgun(shotguns, Shotgun(user->chatId, user->id), &inserito);
+	Shotgun* s = new Shotgun(user->chatId, user->id);
+	int shotgunIndex = findShotgun(shotguns, s);
+	if(shotgunIndex==-1){
+		shotguns->push_back(*s);
+		shotgunIndex = shotguns->size()-1;
+		inserito = true;
+	}
+	delete s;
 	Shotgun* shotgun = &(shotguns->at(shotgunIndex));
 
 	if(inserito){
@@ -228,8 +288,14 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 }
 
 void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
-	int userIndex = getOrInsertUser(users, myUser(message->chat->id, message->from->id));
-	
+	myUser* tmp = new myUser(message->chat->id, message->from->id);
+	int userIndex = findUser(users, tmp);
+	if(userIndex==-1){
+		users->push_back(*tmp);
+		userIndex = users->size()-1;
+		addUserToFile(tmp);
+	}
+	delete tmp;
 	myUser* user = &(users->at(userIndex));
 
 	InlineKeyboardMarkup::Ptr kb(new InlineKeyboardMarkup());
@@ -249,6 +315,7 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 		btn->callbackData = "answer;" + to_string(message->messageId) + ";" + to_string(user->chatId);
 		row0.push_back(btn);
 		kb->inlineKeyboard.push_back(row0);
+		bot->getApi().sendMessage(user->chatId, "Feedback inviato con successo!");
 		bot->getApi().sendMessage(DEV_ID, m, false, 0, kb);
 		break;
 	
@@ -264,7 +331,14 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 
 void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
 	bot->getApi().answerCallbackQuery(callback->id);
-	int userIndex = getOrInsertUser(users, myUser(callback->message->chat->id, callback->from->id));
+	myUser* tmp = new myUser(callback->message->chat->id, callback->from->id);
+	int userIndex = findUser(users, tmp);
+	if(userIndex==-1){
+		users->push_back(*tmp);
+		userIndex = users->size()-1;
+		addUserToFile(tmp);
+	}
+	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	vector<string> options = StringTools::split(callback->data, ';');
 
@@ -275,9 +349,14 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		bot->getApi().sendMessage(DEV_ID, "Scrivi la risposta al feedback o digita /cancel");
 	}
 	else if(options[0] == "shotgun"){
-		bool inserito;
 		if(options[1] == "stop"){
-			int shotgunIndex = getOrInsertShotgun(shotguns, Shotgun(stoi(options[2]), 0), &inserito);
+			Shotgun* s = new Shotgun(stoi(options[2]), 0);
+			int shotgunIndex = findShotgun(shotguns, s);
+			if(shotgunIndex==-1){
+				shotguns->push_back(*s);
+				shotgunIndex = shotguns->size()-1;
+			}
+			delete s;
 			Shotgun* shotgun = &(shotguns->at(shotgunIndex));
 
 			if(user->id == shotgun->creatorId){
@@ -309,7 +388,14 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 			}
 		}
 
-		int shotgunIndex = getOrInsertShotgun(shotguns, Shotgun(stoi(options[1]), user->id), &inserito);
+		bool inserito = false;
+		Shotgun* s = new Shotgun(stoi(options[1]), user->id);
+		int shotgunIndex = findShotgun(shotguns, s);
+		if(shotgunIndex==-1){
+			shotguns->push_back(*s);
+			shotgunIndex = shotguns->size()-1;
+			inserito = true;
+		}
 		Shotgun* shotgun = &(shotguns->at(shotgunIndex));
 		if(inserito){
 			bot->getApi().sendMessage(user->chatId, "@" + callback->from->username + ", questo shotgun è già concluso!");

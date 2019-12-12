@@ -10,7 +10,11 @@ myUser::myUser(long _chatId, int _id, State _state){
 }
 
 bool myUser::equals(myUser u){
-    return id == u.id;
+    return id == u.id && chatId == u.chatId;
+}
+
+bool myUser::equals(myUser* uPtr){
+    return id == uPtr->id && chatId == uPtr->chatId;
 }
 
 Shotgun::Shotgun(long _chatId, int _creatorId){

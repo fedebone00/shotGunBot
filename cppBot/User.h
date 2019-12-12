@@ -14,6 +14,7 @@ typedef struct myUser{
     myUser();
     myUser(long _chatId, int _id, State _state = NORMAL);
     bool equals(myUser u);
+    bool equals(myUser* uPtr);
 } myUser;
 
 typedef struct Shotgun{

@@ -10,11 +10,14 @@
 
 // TODO: Fare riferimento qui alle intestazioni aggiuntive richieste dal programma.
 
-const int DEV_ID = std::stoi(getenv("TELEGRAMDEVID"));
+char* dev_id = getenv("TELEGRAMDEVID");
+const int DEV_ID = dev_id!=NULL ? std::stoi(dev_id) : 0;
+void MergeSort(vector<myUser> *users, int p, int r);
+void Merge(vector<myUser> *users, int p, int q, int r);
 void loadUsersFromFile(vector<myUser> *v);
-void addUserToFile(myUser *u);
-int getOrInsertUser(vector<myUser>* users, myUser _user);
-int getOrInsertShotgun(vector<Shotgun>* shotguns, Shotgun _shotgun, bool* inserito);
+void addUserToFile(myUser* u);
+int findUser(vector<myUser>* users, myUser* _user);
+int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun);
 void handleStartCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
