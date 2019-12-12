@@ -273,7 +273,7 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 	switch (user->state)
 	{
 	case NORMAL:
-		//bot->getApi().sendMessage(user->chatId, "Non è il momento di scrivere cose a caso");
+		if(message->chat->type==Chat::Type::Private) bot->getApi().sendMessage(user->chatId, "Non è il momento di scrivere cose a caso");
 		break;
 
 	case FEEDBACK:
