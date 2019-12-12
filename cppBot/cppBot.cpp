@@ -179,7 +179,10 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 			int sedili;
 			try{
 				sedili = stoi(options[i]);
-			} catch (exception& ex) {info += options[i] + " "; continue;}
+			} catch (exception& ex) {
+				info += info=="" ? "*Info: *"+options[i]+" " : options[i]+" "; 
+				continue;
+			}
 
 			vector<InlineKeyboardButton::Ptr> row(sedili);
 			row.clear();
