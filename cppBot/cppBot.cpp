@@ -115,7 +115,7 @@ int getOrInsertUser(vector<myUser>* users, myUser* _user){
 	}
 	users->push_back(*_user);
 	addUserToFile(_user);
-	return i+1;
+	return i;
 }
 
 void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
