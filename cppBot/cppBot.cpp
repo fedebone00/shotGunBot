@@ -32,6 +32,10 @@ int main(){
 		try{handleCreateCommand(&shotguns, &users, &bot, message);}
 		catch(exception& e){cerr << e.what() << endl;}
 		});
+	bot.getEvents().onCommand("reset", [&shotguns, &bot](Message::Ptr message) {
+		try{handleResetCommand(&shotguns, &bot, message);}
+		catch(exception& e){cerr << e.what() << endl;}
+		});
 	bot.getEvents().onNonCommandMessage([&users, &bot](Message::Ptr message) {
 		try{handleNonCommand(&users, &bot, message);}
 		catch(exception& e){cerr << e.what() << endl;}
@@ -214,6 +218,13 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 	} else {
 		bot->getApi().sendMessage(user->chatId, "Uno shotgun è già in corso, concludi quello e riprova");
 	}
+}
+
+void handleResetCommand(vector<Shotgun>* shotguns, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	for(int i=0; i<shotguns->size(); i++){
+		if(shotguns->at(i).chatId == message->chat->id) shotguns->erase(shotguns->begin()+i);
+	}
+	bot->getApi().sendMessage(message->chat->id, "Reset avvenuto con successo, eliminate tutte le istanze di shotgun di questa chat");
 }
 
 void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
