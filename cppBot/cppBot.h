@@ -12,8 +12,6 @@
 
 char* dev_id = getenv("TELEGRAMDEVID");
 const int DEV_ID = dev_id!=NULL ? std::stoi(dev_id) : 0;
-void MergeSort(vector<myUser> *users, int p, int r);
-void Merge(vector<myUser> *users, int p, int q, int r);
 void loadUsersFromFile(vector<myUser> *v);
 void addUserToFile(myUser* u);
 int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun);
