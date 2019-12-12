@@ -222,7 +222,10 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 
 void handleResetCommand(vector<Shotgun>* shotguns, TgBot::Bot* bot, TgBot::Message::Ptr message){
 	for(int i=0; i<shotguns->size(); i++){
-		if(shotguns->at(i).chatId == message->chat->id) shotguns->erase(shotguns->begin()+i);
+		if(shotguns->at(i).chatId == message->chat->id){
+			bot->getApi().deleteMessage(message->chat->id, shotguns->at(i).messageId);
+			shotguns->erase(shotguns->begin()+i);
+		}
 	}
 	bot->getApi().sendMessage(message->chat->id, "Reset avvenuto con successo, eliminate tutte le istanze di shotgun di questa chat");
 }
