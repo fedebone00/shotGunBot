@@ -284,7 +284,6 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 }
 
 void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
-	cout << callback->data << endl;
 	bot->getApi().answerCallbackQuery(callback->id);
 	myUser* tmp = new myUser(callback->message->chat->id, callback->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
