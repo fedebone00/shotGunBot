@@ -40,7 +40,7 @@ int main(){
 		try{handleCallbackQuery(&shotguns, &users, &bot, callback);}
 		catch(exception& e){cerr << e.what() << endl;}
 		});
-
+		
 	try {
         printf("Bot username: %s\n", bot.getApi().getMe()->username.c_str());
         bot.getApi().deleteWebhook();
@@ -89,7 +89,7 @@ void addUserToFile(myUser* u){
 		return;
 	}
 	file << u->chatId << " " << u->id << endl;
-	cout << "added" << endl;
+	cout << "new user saved" << endl;
 	file.close();
 }
 
@@ -180,7 +180,7 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 			try{
 				sedili = stoi(options[i]);
 			} catch (exception& ex) {
-				info += info=="" ? "*Info: *"+options[i]+" " : options[i]+" "; 
+				info += (info=="") ? "*Info: *"+options[i]+" " : options[i]+" "; 
 				continue;
 			}
 
@@ -204,7 +204,8 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		shotgun->keyboard->inlineKeyboard.push_back(lRow);
 
 		string mex = "*Attenzione Attenzione!*\n"
-		"Pare che @" + message->from->username + " voglia offrire un passaggio\n" + info + "\n"
+		"Pare che @" + message->from->username + " voglia offrire un passaggio\n"
+		+ info + "\n"
 		"Pronti... Ai vostri posti... *SHOTGUN*";
 
 		Message::Ptr m = bot->getApi().sendMessage(user->chatId, mex, false, 0, shotgun->keyboard, "Markdown");
