@@ -6,7 +6,7 @@
 using namespace std;
 using namespace TgBot;
 
-int answeringAt, answeringMessageId;
+int answeringAt, answeringMessageId, BOT_ID;
 
 int main(){
 	char* key = getenv("SHOTGUNBOTKEY");
@@ -15,10 +15,13 @@ int main(){
 	loadUsersFromFile(&users);
 	vector<Shotgun> shotguns;
 	Bot bot(token);
+	BOT_ID = bot.getApi().getMe()->id;
 
 	bot.getEvents().onCommand("start", [&users, &bot](Message::Ptr message) {
 		try{handleStartCommand(&users, &bot, message);}
-		catch(exception& e){cerr << e.what() << endl;}
+		catch(exception& e){
+				cerr << e.what() << endl;
+			}
 		});
 	bot.getEvents().onCommand("feedback", [&users, &bot](Message::Ptr message) {
 		try{handleFeedbackCommand(&users, &bot, message);}
@@ -119,6 +122,7 @@ int getOrInsertUser(vector<myUser>* users, myUser* _user){
 }
 
 void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
+	bot->getApi().sendChatAction(message->chat->id, "typing");
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
@@ -131,6 +135,7 @@ void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
 }
 
 void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	bot->getApi().sendChatAction(message->chat->id, "typing");
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
@@ -140,15 +145,21 @@ void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Messag
 }
 
 void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	bot->getApi().sendChatAction(message->chat->id, "typing");
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
-	user->state = NORMAL;
-	bot->getApi().sendMessage(user->chatId, "Operazione annullata");
+	if(user->state != NORMAL){
+		user->state = NORMAL;
+		bot->getApi().sendMessage(user->chatId, "Operazione annullata");
+	} else {
+		bot->getApi().sendMessage(user->chatId, "Nessuna operazione da annullare");
+	}
 }
 
 void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	bot->getApi().sendChatAction(message->chat->id, "typing");
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
@@ -215,22 +226,27 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		Message::Ptr m = bot->getApi().sendMessage(user->chatId, mex, false, 0, shotgun->keyboard, "Markdown");
 		shotgun->messageId = m->messageId;
 		shotgun->messageText = mex;
+		if(message->chat->type == Chat::Type::Group){
+			bot->getApi().pinChatMessage(user->chatId, shotgun->messageId);
+		}
 	} else {
 		bot->getApi().sendMessage(user->chatId, "Uno shotgun è già in corso, concludi quello e riprova");
 	}
 }
 
 void handleResetCommand(vector<Shotgun>* shotguns, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	bot->getApi().sendChatAction(message->chat->id, "typing");
 	for(int i=0; i<shotguns->size(); i++){
 		if(shotguns->at(i).chatId == message->chat->id){
 			bot->getApi().deleteMessage(message->chat->id, shotguns->at(i).messageId);
 			shotguns->erase(shotguns->begin()+i);
 		}
 	}
-	bot->getApi().sendMessage(message->chat->id, "Reset avvenuto con successo, eliminate tutte le istanze di shotgun di questa chat");
+	bot->getApi().sendMessage(message->chat->id, "Reset avvenuto con successo, eliminate tutte le istanze shotgun aperte in questa chat");
 }
 
 void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	bot->getApi().sendChatAction(message->chat->id, "typing");
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
@@ -284,13 +300,15 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 	else if(options[0] == "shotgun"){
 		if(options[1] == "stop"){
 			Shotgun* s = new Shotgun(stoi(options[2]), 0);
+			Shotgun* shotgun = NULL;
 			int shotgunIndex = findShotgun(shotguns, s);
-			if(shotgunIndex==-1){
-				shotguns->push_back(*s);
-				shotgunIndex = shotguns->size()-1;
+			if(shotgunIndex!=-1){
+				shotgun = &(shotguns->at(shotgunIndex));
+			} else {
+				bot->getApi().deleteMessage(callback->message->chat->id, callback->message->messageId);
+				return;
 			}
 			delete s;
-			Shotgun* shotgun = &(shotguns->at(shotgunIndex));
 
 			if(user->id == shotgun->creatorId){
 				for(int n=0; n<shotgun->keyboard->inlineKeyboard.size(); n++){
@@ -306,6 +324,8 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 				//*kb = *(shotgun->keyboard);
 
 				bot->getApi().editMessageText(shotgun->messageText, shotgun->chatId, shotgun->messageId, "", "Markdown", false, shotgun->keyboard);
+				bot->getApi().unpinChatMessage(user->chatId);
+
 				shotguns->erase(shotguns->begin()+shotgunIndex);
 				bot->getApi().sendMessage(user->chatId, "Shotgun terminato");
 			} else {

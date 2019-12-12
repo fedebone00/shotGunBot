@@ -15,6 +15,7 @@ const int DEV_ID = dev_id!=NULL ? std::stoi(dev_id) : 0;
 void loadUsersFromFile(vector<myUser> *v);
 void addUserToFile(myUser* u);
 int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun);
+int getOrInsertUser(vector<myUser>* users, myUser* _user);
 void handleStartCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
