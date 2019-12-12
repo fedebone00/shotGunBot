@@ -129,15 +129,6 @@ void addUserToFile(myUser* u){
 	file.close();
 }
 
-int findUser(vector<myUser>* users, myUser* _user){
-	for (int i = 0; i < users->size(); i++)
-	{
-		if(users->at(i).equals(_user))
-			return i;
-	}
-	return -1;
-}
-
 int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun){
 	for (int i = 0; i < shotguns->size(); i++)
 	{
@@ -176,12 +167,7 @@ int getOrInsertUser(vector<myUser>* users, myUser* _user){
 
 void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
-	int userIndex = findUser(users, tmp);
-	if(userIndex==-1){
-		users->push_back(*tmp);
-		userIndex = users->size()-1;
-		addUserToFile(tmp);
-	}
+	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	bot->getApi().sendMessage(user->chatId, "Ciao, sono un bot demmerda scritto in c++, porta pazienza"
@@ -193,12 +179,7 @@ void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
 
 void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
-	int userIndex = findUser(users, tmp);
-	if(userIndex==-1){
-		users->push_back(*tmp);
-		userIndex = users->size()-1;
-		addUserToFile(tmp);
-	}
+	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	user->state = FEEDBACK;
@@ -207,12 +188,8 @@ void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Messag
 
 void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
-	int userIndex = findUser(users, tmp);
-	if(userIndex==-1){
-		users->push_back(*tmp);
-		userIndex = users->size()-1;
-		addUserToFile(tmp);
-	}
+	int userIndex = getOrInsertUser(users, tmp);
+	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	user->state = NORMAL;
 	bot->getApi().sendMessage(user->chatId, "Operazione annullata");
@@ -220,12 +197,7 @@ void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message:
 
 void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
-	int userIndex = findUser(users, tmp);
-	if(userIndex==-1){
-		users->push_back(*tmp);
-		userIndex = users->size()-1;
-		addUserToFile(tmp);
-	}
+	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	
@@ -289,12 +261,7 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 
 void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
-	int userIndex = findUser(users, tmp);
-	if(userIndex==-1){
-		users->push_back(*tmp);
-		userIndex = users->size()-1;
-		addUserToFile(tmp);
-	}
+	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
 
@@ -332,12 +299,7 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
 	bot->getApi().answerCallbackQuery(callback->id);
 	myUser* tmp = new myUser(callback->message->chat->id, callback->from->id);
-	int userIndex = findUser(users, tmp);
-	if(userIndex==-1){
-		users->push_back(*tmp);
-		userIndex = users->size()-1;
-		addUserToFile(tmp);
-	}
+	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
 	vector<string> options = StringTools::split(callback->data, ';');

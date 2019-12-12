@@ -16,7 +16,6 @@ void MergeSort(vector<myUser> *users, int p, int r);
 void Merge(vector<myUser> *users, int p, int q, int r);
 void loadUsersFromFile(vector<myUser> *v);
 void addUserToFile(myUser* u);
-int findUser(vector<myUser>* users, myUser* _user);
 int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun);
 void handleStartCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleFeedbackCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
