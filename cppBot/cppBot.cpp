@@ -56,40 +56,6 @@ int main(){
 	return 0;
 }
 
-void MergeSort(vector<myUser> *users, int p, int r){
-    if(p<r){
-        int q = (p+r)/2;
-        MergeSort(users, p, q);
-        MergeSort(users, q+1, r);
-        Merge(users, p, q, r);
-    }
-}
-
-void Merge(vector<myUser> *users, int p, int q, int r){
-    int lSx = q-p+1;
-    int lDx = r-q;
-    vector<myUser> Dx, Sx;
-    for(int i=0; i<lSx; i++){
-        Sx.push_back(users->at(p+i));
-    }
-    for(int j=0; j<lDx; j++){
-        Dx.push_back(users->at(q+j+1));
-    }
-    Dx.push_back(myUser(0, INT32_MAX));
-    Sx.push_back(myUser(0, INT32_MAX));
-
-    int i=0, j=0;
-    for(int k=p; k<=r; k++){
-        if(Sx[i].id <= Dx[j].id ){
-            users->at(k) = Sx[i];
-            i++;
-        } else {
-            users->at(k) = Dx[j];
-            j++;
-        }
-    }
-}
-
 void loadUsersFromFile(vector<myUser> *v){
 	ifstream file;
 	long _chatId;
@@ -107,8 +73,6 @@ void loadUsersFromFile(vector<myUser> *v){
 		v->push_back(myUser(_chatId, _id));
 	}
 	file.close();
-
-	MergeSort(v, 0, v->size()-1);
 
 	cout << "loaded and ordered " << v->size() << endl;
 }
@@ -139,12 +103,30 @@ int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun){
 }
 
 int getOrInsertUser(vector<myUser>* users, myUser* _user){
-	for(int i=0; i<users->size(); i++){
-		if(users->at(i).equals(_user)) return i;
+	if(users->size() == 0){
+		users->insert(users->begin(), *_user);
+		addUserToFile(_user);
+		return 0;
 	}
-	users->push_back(*_user);
+	int bottom = 0, top = users->size()-1, middle;
+	
+	while(top >= bottom){
+		middle = (top+bottom)/2;
+
+		if(_user->id < users->at(middle).id) top = middle-1;
+		else if(_user->id > users->at(middle).id) bottom = middle+1;
+		else if(users->at(middle).equals(_user)) return middle;
+		else break;
+	}
+
 	addUserToFile(_user);
-	return users->size()-1;
+	if(_user->id < users->at(middle).id){
+		users->insert(users->begin()+middle-1, *_user);
+		return middle-1;
+	} else {
+		users->insert(users->begin()+middle+1, *_user);
+		return middle+1;
+	}
 }
 
 void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
