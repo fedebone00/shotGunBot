@@ -284,6 +284,7 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 }
 
 void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
+	cout << callback->data << endl;
 	bot->getApi().answerCallbackQuery(callback->id);
 	myUser* tmp = new myUser(callback->message->chat->id, callback->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
@@ -367,7 +368,7 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 
 		if(shotgun->keyboard->inlineKeyboard[i][j]->text == "@" + callback->from->username){
 			shotgun->keyboard->inlineKeyboard[i][j]->text = "Libero";
-			shotgun->keyboard->inlineKeyboard[i][j]->callbackData = "shotgun;occupato da @" + callback->from->username;
+			shotgun->keyboard->inlineKeyboard[i][j]->callbackData = "shotgun;" + to_string(shotgun->chatId) + ";" + to_string(i) + ";" + to_string(j);
 		} else {
 			for(int n=0; n<shotgun->keyboard->inlineKeyboard.size(); n++){
 				for(int m=0; m<shotgun->keyboard->inlineKeyboard[n].size(); m++){
