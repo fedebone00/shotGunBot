@@ -204,7 +204,7 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		shotgun->keyboard->inlineKeyboard.push_back(lRow);
 
 		string mex = "*Attenzione Attenzione!*\n"
-		"Pare che @" + message->from->username + " voglia offrire un passaggio\n*Info:* " + info + "\n"
+		"Pare che @" + message->from->username + " voglia offrire un passaggio\n" + info + "\n"
 		"Pronti... Ai vostri posti... *SHOTGUN*";
 
 		Message::Ptr m = bot->getApi().sendMessage(user->chatId, mex, false, 0, shotgun->keyboard, "Markdown");
