@@ -103,30 +103,15 @@ int findShotgun(vector<Shotgun>* shotguns, Shotgun* _shotgun){
 }
 
 int getOrInsertUser(vector<myUser>* users, myUser* _user){
-	if(users->size() == 0){
-		users->insert(users->begin(), *_user);
-		addUserToFile(_user);
-		return 0;
+	int i;
+	for (i = 0; i < users->size(); i++)
+	{
+		if(users->at(i).equals(_user))
+			return i;
 	}
-	int bottom = 0, top = users->size()-1, middle;
-	
-	while(top >= bottom){
-		middle = (top+bottom)/2;
-
-		if(_user->id < users->at(middle).id) top = middle-1;
-		else if(_user->id > users->at(middle).id) bottom = middle+1;
-		else if(users->at(middle).equals(_user)) return middle;
-		else break;
-	}
-
+	users->push_back(*_user);
 	addUserToFile(_user);
-	if(_user->id < users->at(middle).id){
-		users->insert(users->begin()+middle-1, *_user);
-		return middle-1;
-	} else {
-		users->insert(users->begin()+middle+1, *_user);
-		return middle+1;
-	}
+	return i+1;
 }
 
 void handleStartCommand(vector<myUser>* users, Bot* bot, Message::Ptr message){
