@@ -74,7 +74,7 @@ void loadUsersFromFile(vector<myUser> *v){
 	}
 	file.close();
 
-	cout << "loaded and ordered " << v->size() << endl;
+	cout << "loaded " << v->size() << endl;
 }
 
 void addUserToFile(myUser* u){
@@ -189,9 +189,13 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 
 	if(inserito){
 		shotgun->keyboard = InlineKeyboardMarkup::Ptr(new InlineKeyboardMarkup);
-
+		string info = "";
 		for(int i=0; i<options.size(); i++){
-			int sedili = stoi(options[i]);
+			int sedili;
+			try{
+				sedili = stoi(options[i]);
+			} catch (exception& ex) {info += options[i] + " "; continue;}
+
 			vector<InlineKeyboardButton::Ptr> row(sedili);
 			row.clear();
 			for(int j=0; j<sedili; j++){
@@ -212,7 +216,7 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		shotgun->keyboard->inlineKeyboard.push_back(lRow);
 
 		string mex = "*Attenzione Attenzione!*\n"
-		"Pare che @" + message->from->username + " voglia offrire un passaggio\n"
+		"Pare che @" + message->from->username + " voglia offrire un passaggio\n*Info:* " + info + "\n"
 		"Pronti... Ai vostri posti... *SHOTGUN*";
 
 		Message::Ptr m = bot->getApi().sendMessage(user->chatId, mex, false, 0, shotgun->keyboard, "Markdown");
