@@ -45,7 +45,10 @@ int main(){
 		});
 	bot.getEvents().onCallbackQuery([&shotguns, &users, &bot](CallbackQuery::Ptr callback) {
 		try{handleCallbackQuery(&shotguns, &users, &bot, callback);}
-		catch(exception& e){cerr << e.what() << endl;}
+		catch(exception& e){
+			cerr << e.what() << endl;
+			bot.getApi().answerCallbackQuery(callback->id, "Errore nell'elaborazione", true);
+		}
 		});
 		
 	try {
@@ -284,7 +287,6 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 }
 
 void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
-	bot->getApi().answerCallbackQuery(callback->id);
 	myUser* tmp = new myUser(callback->message->chat->id, callback->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
@@ -296,18 +298,20 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		answeringMessageId = stoi(options[1]);
 		answeringAt = stoi(options[2]);
 		bot->getApi().sendMessage(DEV_ID, "Scrivi la risposta al feedback o digita /cancel");
+		bot->getApi().answerCallbackQuery(callback->id);
 	}
 	else if(options[0] == "shotgun"){
 		if(options[1] == "stop"){
 			Shotgun* s = new Shotgun(stoi(options[2]), 0);
 			Shotgun* shotgun = NULL;
 			int shotgunIndex = findShotgun(shotguns, s);
-			if(shotgunIndex!=-1){
-				shotgun = &(shotguns->at(shotgunIndex));
-			} else {
+			if(shotgunIndex==-1){
 				bot->getApi().deleteMessage(callback->message->chat->id, callback->message->messageId);
+				bot->getApi().answerCallbackQuery(callback->id, "Errore, questo shotgun è già stato terminato", true);
 				return;
 			}
+
+			shotgun = &(shotguns->at(shotgunIndex));
 			delete s;
 
 			if(user->id == shotgun->creatorId){
@@ -328,15 +332,15 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 
 				shotguns->erase(shotguns->begin()+shotgunIndex);
 				bot->getApi().sendMessage(user->chatId, "Shotgun terminato");
+				bot->getApi().answerCallbackQuery(callback->id);
 			} else {
-				bot->getApi().sendMessage(user->chatId, "@" + callback->from->username + " vuole concludere lo shotgun, paura che ti rubino il posto?");
+				bot->getApi().answerCallbackQuery(callback->id, "Non puoi concludere uno shotgun che non hai creato!", true);
 			}
 			return;
 		}
 		if(StringTools::startsWith(options[1], "occupato")){
 			if(stoi(options[2]) != user->id){
-				string m = "@" + callback->from->username + " questo posto è già " + options[1];
-				bot->getApi().sendMessage(user->chatId, m);
+				bot->getApi().answerCallbackQuery(callback->id, "Questo posto è già " + options[1], true);
 				return;
 			}
 		}
@@ -351,7 +355,7 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		}
 		Shotgun* shotgun = &(shotguns->at(shotgunIndex));
 		if(inserito){
-			bot->getApi().sendMessage(user->chatId, "@" + callback->from->username + ", questo shotgun è già concluso!");
+			bot->getApi().answerCallbackQuery(callback->id, "Questo shotgun è già concluso!", true);
 			shotguns->erase(shotguns->begin()+shotgunIndex);
 			return;
 		}
@@ -362,6 +366,7 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		if(i == 0 && j == 0 && user->id != shotgun->creatorId){
 			string m = "@" + callback->from->username + " tenta il colpo di stato e vuole guidare";
 			bot->getApi().sendMessage(user->chatId, m);
+			bot->getApi().answerCallbackQuery(callback->id);
 			return;
 		}
 
@@ -382,5 +387,6 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 		}
 
 		bot->getApi().editMessageText(shotgun->messageText, shotgun->chatId, shotgun->messageId, "", "Markdown", false, shotgun->keyboard);
+		bot->getApi().answerCallbackQuery(callback->id);
 	}
 }
