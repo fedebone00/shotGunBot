@@ -23,3 +23,6 @@ void handleCreateCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 void handleResetCommand(vector<Shotgun>* shotguns, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message);
 void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback);
+void handleAnswerQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback);
+void handleShotgunQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback);
+void receivedFeedback(Bot* bot, myUser* user, Message::Ptr message);
