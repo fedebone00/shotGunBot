@@ -3,7 +3,8 @@
 using namespace std;
 using namespace TgBot;
 
-int answeringAt, answeringMessageId, BOT_ID;
+long answeringAt;
+int answeringMessageId, BOT_ID;
 
 int main(){
 	char* key = getenv("SHOTGUNBOTKEY");
@@ -249,25 +250,24 @@ void handleNonCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Pt
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
 
-	switch (user->state)
-	{
-	case NORMAL:
-		if(message->chat->type==Chat::Type::Private) bot->getApi().sendMessage(user->chatId, "Non è il momento di scrivere cose a caso");
-		break;
+	switch (user->state){
+		case NORMAL:
+			if(message->chat->type==Chat::Type::Private) bot->getApi().sendMessage(user->chatId, "Non è il momento di scrivere cose a caso");
+			break;
 
-	case FEEDBACK:
-		receivedFeedback(bot, user, message);
-		user->state = NORMAL;
-		break;
-	
-	case ANSWER:
-		bot->getApi().sendMessage(answeringAt, message->text, false, answeringMessageId);
-		bot->getApi().sendMessage(DEV_ID, "Risposta inviata con successo");
-		user->state = NORMAL;
-		break;
+		case FEEDBACK:
+			receivedFeedback(bot, user, message);
+			user->state = NORMAL;
+			break;
+		
+		case ANSWER:
+			bot->getApi().sendMessage(answeringAt, message->text, false, answeringMessageId);
+			bot->getApi().sendMessage(DEV_ID, "Risposta inviata con successo");
+			user->state = NORMAL;
+			break;
 
-	default:
-		break;
+		default:
+			break;
 	}
 }
 
@@ -276,6 +276,8 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
+
+	cout << callback->data << endl;
 
 	if(StringTools::startsWith(callback->data, "answer")){
 		handleAnswerQuery(shotguns, user, bot, callback);
@@ -288,14 +290,14 @@ void handleAnswerQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot,
 	vector<string> options = StringTools::split(callback->data, ';');
 	user->state = ANSWER;
 	answeringMessageId = stoi(options[1]);
-	answeringAt = stoi(options[2]);
+	answeringAt = stol(options[2]);
 	bot->getApi().sendMessage(DEV_ID, "Scrivi la risposta al feedback o digita /cancel");
 	bot->getApi().answerCallbackQuery(callback->id);
 }
 
 void handleShotgunQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
 	vector<string> options = StringTools::split(callback->data, ';');
-	int _chatId = stoi(options[2]);
+	long _chatId = stol(options[2]);
 	int _creatorId = stoi(options[3]);
 	Shotgun* s = new Shotgun(_chatId, _creatorId);
 	int shotgunIndex = findShotgun(shotguns, s);
