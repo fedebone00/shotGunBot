@@ -21,7 +21,7 @@ int main(){
 		});
 	bot.getEvents().onCommand("feedback", [&users, &bot](Message::Ptr message) {
 		try{handleFeedbackCommand(&users, &bot, message);}
-		catch(exception& e){cout << e.what() << endl;}
+		catch(exception& e){cerr << e.what() << endl;}
 		});
 	bot.getEvents().onCommand("cancel", [&users, &bot](Message::Ptr message) {
 		try{handleCancelCommand(&users, &bot, message);}
@@ -276,8 +276,6 @@ void handleCallbackQuery(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
-
-	cout << callback->data << endl;
 
 	if(StringTools::startsWith(callback->data, "answer")){
 		handleAnswerQuery(shotguns, user, bot, callback);
