@@ -13,14 +13,6 @@ typedef struct myUser{
     State state;
     myUser();
     myUser(long _chatId, int _id, State _state = NORMAL);
-    bool equals(myUser u);
-    bool equals(myUser* uPtr);
+    bool equals(myUser u) const;
+    bool equals(myUser* uPtr) const;
 } myUser;
-
-typedef struct Shotgun{
-    long chatId;
-    int creatorId, messageId;
-    string messageText;
-    InlineKeyboardMarkup::Ptr keyboard;
-    Shotgun(long _chatId, int _creatorId);
-} Shotgun;

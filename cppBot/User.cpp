@@ -9,15 +9,10 @@ myUser::myUser(long _chatId, int _id, State _state){
     state = _state;
 }
 
-bool myUser::equals(myUser u){
+bool myUser::equals(myUser u) const{
     return id == u.id && chatId == u.chatId;
 }
 
-bool myUser::equals(myUser* uPtr){
+bool myUser::equals(myUser* uPtr) const{
     return id == uPtr->id && chatId == uPtr->chatId;
-}
-
-Shotgun::Shotgun(long _chatId, int _creatorId){
-    chatId = _chatId;
-    creatorId = _creatorId;
 }

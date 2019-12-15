@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 3.8)
 
 
 # Aggiungere l'origine all'eseguibile di questo progetto.
-add_executable (cppBot "cppBot.cpp" "cppBot.h" "User.cpp" "User.h")
+add_executable (cppBot "cppBot.cpp" "cppBot.h" "User.cpp" "User.h" "Shotgun.cpp" "Shotgun.h")
 
 target_link_libraries(cppBot TgBot ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
 
