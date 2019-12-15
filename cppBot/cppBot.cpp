@@ -164,7 +164,7 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 	string infoMessage = "Digita /create seguito da una serie di numeri delimitato da spazio"
 		" che rappresentano il numero di sedili per fila.\n"
 		"Aggiungi le *informazioni utili* con il parametro *-i [info]*\n "
-		"Ad esempio una multipla sarà\n/create 3 3 -i 7.15 in stazione";
+		"Ad esempio una multipla sarà\n\n/create 3 3 -i 7.15 in stazione";
 
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
@@ -177,7 +177,7 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 	options.erase(options.begin());
 
 	if(options.size() == 0){
-		bot->getApi().sendMessage(user->chatId, infoMessage);
+		bot->getApi().sendMessage(user->chatId, infoMessage, false, 0, NULL, "Markdown");
 		return;
 	}
 
@@ -201,7 +201,7 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 		try{
 			sedili = stoi(options[i]);
 		} catch (exception& ex) {
-			bot->getApi().sendMessage(user->chatId, infoMessage);
+			bot->getApi().sendMessage(user->chatId, infoMessage, false, 0, NULL, "Markdown");
 			return;
 		}
 
