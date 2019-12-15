@@ -161,19 +161,23 @@ void handleCancelCommand(vector<myUser>* users, TgBot::Bot* bot, TgBot::Message:
 }
 
 void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	string infoMessage = "Digita /create seguito da una serie di numeri delimitato da spazio"
+		" che rappresentano il numero di sedili per fila.\n"
+		"Aggiungi le *informazioni utili* con il parametro *-i [info]*\n "
+		"Ad esempio una multipla sarà\n/create 3 3 -i 7.15 in stazione";
+
 	myUser* tmp = new myUser(message->chat->id, message->from->id);
 	int userIndex = getOrInsertUser(users, tmp);
 	delete tmp;
 	myUser* user = &(users->at(userIndex));
+
+	int iParamIndex = message->text.find(" -i ");
 	
-	vector<string> options = StringTools::split(message->text, ' ');
+	vector<string> options = StringTools::split(message->text.substr(0, iParamIndex), ' ');
 	options.erase(options.begin());
 
-	if(options.size() == 0 || options[0] == "-h" || options[0] == "--help"){
-		bot->getApi().sendMessage(user->chatId, 
-		"Digita /create seguito da una serie di numeri delimitato da spazio"
-		" che rappresentano il numero di sedili per fila.\n"
-		"Ad esempio una multipla sarà\n/create 3 3");
+	if(options.size() == 0){
+		bot->getApi().sendMessage(user->chatId, infoMessage);
 		return;
 	}
 
@@ -191,14 +195,14 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 	Shotgun* shotgun = &(shotguns->at(shotgunIndex));
 
 	shotgun->keyboard = InlineKeyboardMarkup::Ptr(new InlineKeyboardMarkup);
-	string info = "";
+	string info = iParamIndex!=-1 ? "*Info: *" + message->text.substr(iParamIndex+4) : "";
 	for(int i=0; i<options.size(); i++){
 		int sedili;
 		try{
 			sedili = stoi(options[i]);
 		} catch (exception& ex) {
-			info += (info=="") ? "*Info: *"+options[i]+" " : options[i]+" "; 
-			continue;
+			bot->getApi().sendMessage(user->chatId, infoMessage);
+			return;
 		}
 
 		vector<InlineKeyboardButton::Ptr> row(sedili);
