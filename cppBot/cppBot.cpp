@@ -42,7 +42,9 @@ int main(){
 		try{handleCallbackQuery(&shotguns, &users, &bot, callback);}
 		catch(exception& e){
 			cerr << e.what() << endl;
-			bot.getApi().answerCallbackQuery(callback->id, "Errore nell'elaborazione", true);
+			try{
+				bot.getApi().answerCallbackQuery(callback->id, "Errore nell'elaborazione", true);
+			} catch(exception& e){}
 		}
 		});
 		
@@ -363,91 +365,6 @@ void handleShotgunQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot
 		return;
 	}
 }
-/*
-void handleShotgunQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot, TgBot::CallbackQuery::Ptr callback){
-	vector<string> options = StringTools::split(callback->data, ';');
-	if(options[1] == "stop"){
-		int _chatId = stoi(options[2]);
-		int _creatorId = stoi(options[3]);
-		Shotgun* s = new Shotgun(_chatId, _creatorId);
-		int shotgunIndex = findShotgun(shotguns, s);
-		if(shotgunIndex==-1){
-			bot->getApi().deleteMessage(callback->message->chat->id, callback->message->messageId);
-			bot->getApi().answerCallbackQuery(callback->id, "Errore, questo shotgun è già stato terminato", true);
-			return;
-		}
-		delete s;
-		Shotgun* shotgun = &(shotguns->at(shotgunIndex));
-
-		if(user->id == shotgun->creatorId){
-			for(int n=0; n<shotgun->keyboard->inlineKeyboard.size(); n++){
-				for(int m=0; m<shotgun->keyboard->inlineKeyboard[n].size(); m++){
-					if(shotgun->keyboard->inlineKeyboard[n][m]->text == "@" + callback->from->username){
-						shotgun->keyboard->inlineKeyboard[n][m]->callbackData = "skip";
-					}
-				}
-			}
-			shotgun->keyboard->inlineKeyboard.pop_back();
-
-			bot->getApi().editMessageText(shotgun->messageText + "\n\n*Terminato*", shotgun->chatId, shotgun->messageId, "", "Markdown", false, shotgun->keyboard);
-			if(callback->message->chat->type == Chat::Type::Group){
-				bot->getApi().unpinChatMessage(user->chatId);
-			}
-			shotguns->erase(shotguns->begin()+shotgunIndex);
-			bot->getApi().answerCallbackQuery(callback->id);
-		} else {
-			bot->getApi().answerCallbackQuery(callback->id, "Non puoi concludere uno shotgun che non hai creato!", true);
-		}
-		return;
-	}
-	if(StringTools::startsWith(options[1], "occupato")){
-		int _userId = stoi(options[2]);
-		if(_userId != user->id){
-			bot->getApi().answerCallbackQuery(callback->id, "Questo posto è già " + options[1], true);
-			return;
-		}
-	}
-
-	int _chatId = stoi(options[1]);
-	Shotgun* s = new Shotgun(_chatId, user->id);
-	int shotgunIndex = findShotgun(shotguns, s);
-	if(shotgunIndex==-1){
-		bot->getApi().answerCallbackQuery(callback->id, "Questo shotgun è già concluso!", true);
-		return;
-	}
-	delete s;
-	Shotgun* shotgun = &(shotguns->at(shotgunIndex));
-
-	int i=stoi(options[2]);
-	int j=stoi(options[3]);
-
-	if(i == 0 && j == 0 && user->id != shotgun->creatorId){
-		string m = "@" + callback->from->username + " tenta il colpo di stato e vuole guidare";
-		bot->getApi().sendMessage(user->chatId, m);
-		bot->getApi().answerCallbackQuery(callback->id);
-		return;
-	}
-
-	if(shotgun->keyboard->inlineKeyboard[i][j]->text == "@" + callback->from->username){
-		shotgun->keyboard->inlineKeyboard[i][j]->text = "Libero";
-		shotgun->keyboard->inlineKeyboard[i][j]->callbackData = "shotgun;" + to_string(shotgun->chatId) + ";" + to_string(i) + ";" + to_string(j);
-	} else {
-		for(int n=0; n<shotgun->keyboard->inlineKeyboard.size(); n++){
-			for(int m=0; m<shotgun->keyboard->inlineKeyboard[n].size(); m++){
-				if(shotgun->keyboard->inlineKeyboard[n][m]->text == "@" + callback->from->username){
-					shotgun->keyboard->inlineKeyboard[n][m]->text = "Libero";
-					shotgun->keyboard->inlineKeyboard[n][m]->callbackData = "shotgun;" + to_string(shotgun->chatId) + ";" + to_string(n) + ";" + to_string(m);
-				}
-			}
-		}
-		shotgun->keyboard->inlineKeyboard[i][j]->text = "@" + callback->from->username;
-		shotgun->keyboard->inlineKeyboard[i][j]->callbackData = "shotgun;" + to_string(shotgun->chatId) + ";" + to_string(i) + ";" + to_string(j);
-	}
-
-	bot->getApi().editMessageText(shotgun->messageText, shotgun->chatId, shotgun->messageId, "", "Markdown", false, shotgun->keyboard);
-	bot->getApi().answerCallbackQuery(callback->id);
-}
-*/
 
 void receivedFeedback(Bot* bot, myUser* user, Message::Ptr message){
 	InlineKeyboardMarkup::Ptr kb(new InlineKeyboardMarkup());
