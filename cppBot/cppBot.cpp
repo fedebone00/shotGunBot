@@ -228,7 +228,8 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 	shotgun->messageId = m->messageId;
 	shotgun->messageText = mex;
 	if(message->chat->type == Chat::Type::Group){
-		bot->getApi().pinChatMessage(user->chatId, shotgun->messageId);
+		try{bot->getApi().pinChatMessage(user->chatId, shotgun->messageId);}
+		catch(exception& e){}
 	}
 }
 
@@ -314,7 +315,8 @@ void handleShotgunQuery(vector<Shotgun>* shotguns, myUser* user, TgBot::Bot* bot
 
 			bot->getApi().editMessageText(shotgun->messageText + "\n\n*Terminato*", shotgun->chatId, shotgun->messageId, "", "Markdown", false, shotgun->keyboard);
 			if(callback->message->chat->type == Chat::Type::Group){
-				bot->getApi().unpinChatMessage(user->chatId);
+				try{bot->getApi().unpinChatMessage(user->chatId);}
+				catch(exception& e){}
 			}
 			shotguns->erase(shotguns->begin()+shotgunIndex);
 			bot->getApi().answerCallbackQuery(callback->id);
