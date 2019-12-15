@@ -31,8 +31,8 @@ int main(){
 		try{handleCreateShotgunCommand(&shotguns, &users, &bot, message);}
 		catch(exception& e){cerr << e.what() << endl;}
 		});
-	bot.getEvents().onCommand("reset", [&shotguns, &bot](Message::Ptr message) {
-		try{handleResetCommand(&shotguns, &bot, message);}
+	bot.getEvents().onCommand("reset", [&shotguns,&users, &bot](Message::Ptr message) {
+		try{handleResetCommand(&shotguns, &users, &bot, message);}
 		catch(exception& e){cerr << e.what() << endl;}
 		});
 	bot.getEvents().onNonCommandMessage([&users, &bot](Message::Ptr message) {
@@ -201,6 +201,7 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 		try{
 			sedili = stoi(options[i]);
 		} catch (exception& ex) {
+			shotguns->pop_back();
 			bot->getApi().sendMessage(user->chatId, infoMessage, false, 0, NULL, "Markdown");
 			return;
 		}
@@ -238,9 +239,13 @@ void handleCreateShotgunCommand(vector<Shotgun>* shotguns, vector<myUser>* users
 	}
 }
 
-void handleResetCommand(vector<Shotgun>* shotguns, TgBot::Bot* bot, TgBot::Message::Ptr message){
+void handleResetCommand(vector<Shotgun>* shotguns, vector<myUser>* users, TgBot::Bot* bot, TgBot::Message::Ptr message){
+	myUser* tmp = new myUser(message->chat->id, message->from->id);
+	int userIndex = getOrInsertUser(users, tmp);
+	delete tmp;
+	myUser* user = &(users->at(userIndex));
 	for(int i=0; i<shotguns->size(); i++){
-		if(shotguns->at(i).chatId == message->chat->id){
+		if(shotguns->at(i).equals(Shotgun(user->chatId, user->id))){
 			bot->getApi().deleteMessage(message->chat->id, shotguns->at(i).messageId);
 			shotguns->erase(shotguns->begin()+i);
 		}
